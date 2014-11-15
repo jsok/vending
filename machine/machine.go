@@ -41,7 +41,7 @@ type Picker interface {
 }
 
 type itemPicker struct {
-	slots []Slot
+	slots []*Slot
 }
 
 func (p *itemPicker) Pick(index int) (*Item, error) {
