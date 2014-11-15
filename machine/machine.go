@@ -45,7 +45,7 @@ type itemPicker struct {
 }
 
 func (p *itemPicker) Pick(index int) (*Item, error) {
-	if index < 0 || index > len(p.slots) {
+	if index < 0 || index >= len(p.slots) {
 		return nil, fmt.Errorf("There are no items in slot %d", index)
 	}
 	slot := p.slots[index]
