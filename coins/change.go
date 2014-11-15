@@ -6,33 +6,41 @@ import (
 	"strings"
 )
 
-type ChangeSet map[Denomination]int
+type Change map[Denomination]int
 
-func (c ChangeSet) String() string {
+func (c Change) Value() int {
+	var accum int = 0
+	for denom, n := range c {
+		accum += int(denom) * n
+	}
+	return accum
+}
+
+func (c Change) String() string {
 	s := make([]string, 0)
 	for denom, num := range c {
 		s = append(s, fmt.Sprintf("%d x %dc", num, denom))
 	}
-	return fmt.Sprintf("ChangeSet[%v]", strings.Join(s, ", "))
+	return fmt.Sprintf("Change[%v]", strings.Join(s, ", "))
 }
 
-type Changer interface {
-	MakeChange(value int) (change ChangeSet, err error)
+type ChangeMaker interface {
+	MakeChange(value int) (change Change, err error)
 }
 
-type GreedyChanger struct {
+type GreedyChangeMaker struct {
 	denoms DenominationSlice
 }
 
-func NewGreedyChanger(denoms DenominationSlice) *GreedyChanger {
+func NewGreedyChangeMaker(denoms DenominationSlice) *GreedyChangeMaker {
 	// Keep the denominations sorted in descending order
 	sort.Sort(sort.Reverse(sort.IntSlice(denoms)))
-	return &GreedyChanger{denoms: denoms}
+	return &GreedyChangeMaker{denoms: denoms}
 }
 
-func (r *GreedyChanger) MakeChange(value int) (ChangeSet, error) {
+func (r *GreedyChangeMaker) MakeChange(value int) (Change, error) {
 	rem := value
-	change := make(ChangeSet, 0)
+	change := make(Change, 0)
 
 	for i := range r.denoms {
 		d := r.denoms[i]
