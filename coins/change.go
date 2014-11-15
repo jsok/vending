@@ -3,7 +3,18 @@ package coins
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
+
+type ChangeSet map[Denomination]int
+
+func (c ChangeSet) String() string {
+	s := make([]string, 0)
+	for denom, num := range c {
+		s = append(s, fmt.Sprintf("%d x %dc", num, denom))
+	}
+	return fmt.Sprintf("ChangeSet[%v]", strings.Join(s, ", "))
+}
 
 type Changer interface {
 	MakeChange(value int) (change ChangeSet, err error)
@@ -32,7 +43,7 @@ func (r *GreedyChanger) MakeChange(value int) (ChangeSet, error) {
 	}
 
 	if rem != 0 {
-		return nil, fmt.Errorf("Could not make exact change for value %d", value)
+		return change, fmt.Errorf("Could not make exact change for value %d", value)
 	}
 	return change, nil
 }
