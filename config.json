@@ -1,0 +1,9 @@
+{
+    "denominations": [1, 5, 20, 50],
+    "slots": [
+        {"item": {"name": "Coke Cola", "price": 180}, "inventory": 20},
+        {"item": {"name": "Water", "price": 120}, "inventory": 20},
+        {"item": {"name": "Coffee", "price": 80}, "inventory": 20},
+        {"item": {"name": "Gopher", "price": 500}, "inventory": 1}
+    ]
+}
