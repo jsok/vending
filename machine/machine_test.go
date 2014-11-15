@@ -1,7 +1,7 @@
 package machine
 
 import (
-	//"fmt"
+	"fmt"
 	"testing"
 
 	"github.com/jsok/vending/coins"
@@ -11,20 +11,25 @@ type FixedItemPicker struct {
 	item *Item
 }
 
-func (p *FixedItemPicker) Pick(index int) *Item {
-	return p.item
+func (p *FixedItemPicker) Pick(index int) (*Item, error) {
+	return p.item, nil
 }
 
-var aussieDenoms = coins.DenominationSlice{1, 5, 10, 20, 50, 100, 200}
+type FailingPicker struct{}
+
+func (p *FailingPicker) Pick(index int) (*Item, error) {
+	return nil, fmt.Errorf("Failed to pick item in slot %d", index)
+}
+
+var changeMaker = coins.NewGreedyChangeMaker(coins.DenominationSlice{1, 5, 10, 20, 50, 100, 200})
 
 func TestMachineUnderpaid(t *testing.T) {
-	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}},
-		coins.NewGreedyChangeMaker(aussieDenoms))
+	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{50: 1}
 	change, err := m.Purchase(0, payWith)
 	if err == nil {
-		t.Errorf("Machine should failed the purhcase")
+		t.Errorf("Machine should have failed the purhcase")
 	}
 
 	paid := payWith.Value()
@@ -39,8 +44,7 @@ func TestMachineUnderpaid(t *testing.T) {
 }
 
 func TestMachineExactPayment(t *testing.T) {
-	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}},
-		coins.NewGreedyChangeMaker(aussieDenoms))
+	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{50: 1, 20: 2, 10: 1}
 	change, err := m.Purchase(0, payWith)
@@ -56,13 +60,28 @@ func TestMachineExactPayment(t *testing.T) {
 }
 
 func TestMachineExpectChange(t *testing.T) {
-	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}},
-		coins.NewGreedyChangeMaker(aussieDenoms))
+	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{200: 1}
 	change, err := m.Purchase(0, payWith)
 	if err != nil {
 		t.Errorf("Machine should have accepted the payment")
+	}
+
+	refunded := change.Value()
+	if refunded != 100 {
+		t.Errorf("Machine refunded %dc, expected change of 100c", refunded)
+	}
+}
+
+func TestMachineFailedToPick(t *testing.T) {
+	m := NewMachine(&FailingPicker{}, changeMaker)
+
+	payWith := coins.Change{100: 1}
+	change, err := m.Purchase(0, payWith)
+
+	if err == nil {
+		t.Errorf("Machine should have failed the purhcase")
 	}
 
 	refunded := change.Value()
