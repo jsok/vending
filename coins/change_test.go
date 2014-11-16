@@ -19,6 +19,11 @@ func TestGreedyChangeMaker(t *testing.T) {
 		expected Change
 	}{
 		{
+			DenominationSlice{1},
+			0,
+			Change{},
+		},
+		{
 			DenominationSlice{1, 5, 10, 20, 50, 100, 200},
 			45,
 			Change{20: 2, 5: 1},
@@ -51,6 +56,10 @@ func TestGreedyChangeMakerFailure(t *testing.T) {
 		denoms DenominationSlice
 		value  int
 	}{
+		{
+			DenominationSlice{3},
+			2,
+		},
 		{
 			DenominationSlice{3, 4},
 			6,
