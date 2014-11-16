@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/jsok/vending/http"
 	"github.com/jsok/vending/machine"
 )
 
@@ -47,4 +48,6 @@ func main() {
 		}
 		fmt.Printf("[%s] -> %s %dc %s\n", item.Choice, item.Item, item.Price, available)
 	}
+
+	http.Serve(machine)
 }
