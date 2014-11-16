@@ -11,14 +11,14 @@ type FixedItemPicker struct {
 	item *Item
 }
 
-func (p *FixedItemPicker) Pick(index int) (*Item, error) {
+func (p *FixedItemPicker) Pick(id string) (*Item, error) {
 	return p.item, nil
 }
 
 type FailingPicker struct{}
 
-func (p *FailingPicker) Pick(index int) (*Item, error) {
-	return nil, fmt.Errorf("Failed to pick item in slot %d", index)
+func (p *FailingPicker) Pick(id string) (*Item, error) {
+	return nil, fmt.Errorf("Failed to pick item in slot %d", id)
 }
 
 var changeMaker = coins.NewGreedyChangeMaker(coins.DenominationSlice{1, 5, 10, 20, 50, 100, 200})
@@ -27,7 +27,7 @@ func TestMachineUnderpaid(t *testing.T) {
 	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{50: 1}
-	change, err := m.Purchase(0, payWith)
+	change, err := m.Purchase("A0", payWith)
 	if err == nil {
 		t.Errorf("Machine should have failed the purhcase")
 	}
@@ -47,7 +47,7 @@ func TestMachineExactPayment(t *testing.T) {
 	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{50: 1, 20: 2, 10: 1}
-	change, err := m.Purchase(0, payWith)
+	change, err := m.Purchase("A0", payWith)
 	if err != nil {
 		t.Errorf("Machine should have accepted the payment")
 	}
@@ -63,7 +63,7 @@ func TestMachineExpectChange(t *testing.T) {
 	m := NewMachine(&FixedItemPicker{&Item{"Item", 100}}, changeMaker)
 
 	payWith := coins.Change{200: 1}
-	change, err := m.Purchase(0, payWith)
+	change, err := m.Purchase("A0", payWith)
 	if err != nil {
 		t.Errorf("Machine should have accepted the payment")
 	}
@@ -78,7 +78,7 @@ func TestMachineFailedToPick(t *testing.T) {
 	m := NewMachine(&FailingPicker{}, changeMaker)
 
 	payWith := coins.Change{100: 1}
-	change, err := m.Purchase(0, payWith)
+	change, err := m.Purchase("A0", payWith)
 
 	if err == nil {
 		t.Errorf("Machine should have failed the purhcase")
@@ -91,27 +91,27 @@ func TestMachineFailedToPick(t *testing.T) {
 }
 
 func TestMachineWithItemPicket(t *testing.T) {
-	picker := &itemPicker{[]*Slot{
-		&Slot{&Item{"Item 0", 99}, 10},
-		&Slot{&Item{"Item 1", 50}, 1},
-		&Slot{&Item{"Item 2", 150}, 0},
+	picker := &ItemPicker{map[string]*Slot{
+		"A0": &Slot{&Item{"Item 0", 99}, 10},
+		"A1": &Slot{&Item{"Item 1", 50}, 1},
+		"A2": &Slot{&Item{"Item 2", 150}, 0},
 	}}
 	m := NewMachine(picker, changeMaker)
 
 	var cases = []struct {
-		Slot    int
+		Slot    string
 		PayWith coins.Change
 		Success bool
 		Reason  string
 	}{
-		{0, coins.Change{100: 1}, true, "Should succeed with change"},
-		{1, coins.Change{50: 1}, true, "Exact payment"},
+		{"A0", coins.Change{100: 1}, true, "Should succeed with change"},
+		{"A1", coins.Change{50: 1}, true, "Exact payment"},
 
-		{0, coins.Change{50: 1}, false, "Not enough payment"},
-		{2, coins.Change{50: 1}, false, "Inventory is exhausted"},
-		{1, coins.Change{50: 1}, false, "Previous purchase should have exhausted inventory"},
-		{3, coins.Change{50: 1}, false, "No such item"},
-		{-1, coins.Change{50: 1}, false, "No such item"},
+		{"A0", coins.Change{50: 1}, false, "Not enough payment"},
+		{"A2", coins.Change{50: 1}, false, "Inventory is exhausted"},
+		{"A1", coins.Change{50: 1}, false, "Previous purchase should have exhausted inventory"},
+		{"A3", coins.Change{50: 1}, false, "No such item"},
+		{"Z9", coins.Change{50: 1}, false, "No such item"},
 	}
 
 	for _, c := range cases {

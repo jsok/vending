@@ -18,7 +18,7 @@ func NewMachine(picker Picker, changeMaker coins.ChangeMaker) *Machine {
 // Purchase the item in the specific slot and accept the given coins as payment
 // Return success of the purchase, and associated change or a full refund in the
 // event of a failure.
-func (m *Machine) Purchase(slot int, payment coins.Change) (coins.Change, error) {
+func (m *Machine) Purchase(slot string, payment coins.Change) (coins.Change, error) {
 	item, err := m.picker.Pick(slot)
 
 	if err != nil {
@@ -36,21 +36,24 @@ func (m *Machine) Purchase(slot int, payment coins.Change) (coins.Change, error)
 	return m.changeMaker.MakeChange(paid - item.Price)
 }
 
+// Interface which allows items to be picked from the machine for the purpose of
+// selling items.
 type Picker interface {
-	Pick(index int) (*Item, error)
+	Pick(id string) (*Item, error)
 }
 
-type itemPicker struct {
-	slots []*Slot
+type ItemPicker struct {
+	slots map[string]*Slot
 }
 
-func (p *itemPicker) Pick(index int) (*Item, error) {
-	if index < 0 || index >= len(p.slots) {
-		return nil, fmt.Errorf("There are no items in slot %d", index)
+func (p *ItemPicker) Pick(id string) (*Item, error) {
+	slot, ok := p.slots[id]
+	if !ok {
+		return nil, fmt.Errorf("There are no items in slot %d", id)
 	}
-	slot := p.slots[index]
+
 	if slot.inventory <= 0 {
-		return nil, fmt.Errorf("The item in slot %d is out of stock", index)
+		return nil, fmt.Errorf("The item in slot %d is out of stock", id)
 	}
 	slot.inventory -= 1
 	return slot.item, nil
