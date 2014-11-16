@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+
+	"github.com/jsok/vending/machine"
 )
 
 func main() {
@@ -26,5 +28,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(config)
+
+	vendor := machine.NewDefaultVendor()
+	for choice, slot := range config.Slots {
+		item := slot.Item
+		vendor.Stock(choice, slot.Inventory, &machine.Item{item.Name, item.Price})
+	}
+
+	changeMaker := machine.NewGreedyChangeMaker(config.Denominations)
+
+	machine := machine.NewMachine(vendor, changeMaker)
+
+	fmt.Println("Vending Machine items available:")
+	for _, item := range machine.Describe() {
+		available := ""
+		if !item.Available {
+			available = "OUT OF STOCK"
+		}
+		fmt.Printf("[%s] -> %s %dc %s\n", item.Choice, item.Item, item.Price, available)
+	}
 }

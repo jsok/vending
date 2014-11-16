@@ -2,7 +2,7 @@ package main
 
 type Config struct {
 	Denominations []int
-	Slots         []struct {
+	Slots         map[string]struct {
 		Item struct {
 			Name  string
 			Price int

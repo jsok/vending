@@ -1,9 +1,13 @@
 {
     "denominations": [1, 5, 20, 50],
-    "slots": [
-        {"item": {"name": "Coke Cola", "price": 180}, "inventory": 20},
-        {"item": {"name": "Water", "price": 120}, "inventory": 20},
-        {"item": {"name": "Coffee", "price": 80}, "inventory": 20},
-        {"item": {"name": "Gopher", "price": 500}, "inventory": 1}
-    ]
+    "slots": {
+        "A1": {"item": {"name": "Coke Cola", "price": 180}, "inventory": 20},
+        "A2": {"item": {"name": "Water", "price": 120}, "inventory": 20},
+        "A3": {"item": {"name": "Coffee", "price": 80}, "inventory": 20},
+        "A4": {"item": {"name": "Gopher", "price": 500}, "inventory": 1},
+        "B1": {"item": {"name": "Unicorn", "price": 200}, "inventory": 0},
+        "B2": {"item": {"name": "iPhone", "price": 1200000}, "inventory": 200000},
+        "B3": {"item": {"name": "GOOG", "price": 544400}, "inventory": 20000000},
+        "B4": {"item": {"name": "BTC", "price": 40000}, "inventory": 10000000}
+    }
 }
