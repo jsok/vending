@@ -36,7 +36,7 @@ func (c Change) String() string {
 }
 
 type ChangeMaker interface {
-	MakeChange(value int) (change Change, err error)
+	MakeChange(value int) (Change, error)
 }
 
 type GreedyChangeMaker struct {

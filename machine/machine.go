@@ -2,59 +2,109 @@ package machine
 
 import (
 	"fmt"
-
-	"github.com/jsok/vending/coins"
+	"sort"
 )
 
 type Machine struct {
-	picker      Picker
-	changeMaker coins.ChangeMaker
+	vendor      Vendor
+	changeMaker ChangeMaker
 }
 
-func NewMachine(picker Picker, changeMaker coins.ChangeMaker) *Machine {
-	return &Machine{picker, changeMaker}
+func NewMachine(vendor Vendor, changeMaker ChangeMaker) *Machine {
+	return &Machine{vendor, changeMaker}
 }
 
 // Purchase the item in the specific slot and accept the given coins as payment
 // Return success of the purchase, and associated change or a full refund in the
 // event of a failure.
-func (m *Machine) Purchase(slot string, payment coins.Change) (coins.Change, error) {
-	item, err := m.picker.Pick(slot)
+func (m *Machine) Purchase(choice string, payment Change) (*Item, Change, error) {
+	var change Change = nil
+
+	slot, err := m.vendor.Pick(choice)
 
 	if err != nil {
-		return payment, fmt.Errorf("Failed for reason: %v. Issuing full refund", err)
+		change = payment
+		err = &ChoiceUnavailableError{choice, err.Error()}
+	} else {
+		paid := payment.Value()
+		price := slot.Price()
+		if paid < price {
+			change = payment // full refund
+			err = &UnderpaidError{choice, price, paid}
+		} else {
+			change, err = m.changeMaker.MakeChange(paid - price)
+			if err != nil {
+				err = &ChoiceUnavailableError{choice, err.Error()}
+				change = payment
+			}
+		}
 	}
 
-	paid := payment.Value()
-	if paid == item.Price {
-		return coins.Change{}, nil
-	} else if paid < item.Price {
-		return payment, fmt.Errorf("Item in slot %d costs %dc, you only paid %dc. Issuing full refund.",
-			slot, item.Price, paid)
+	var item *Item = nil
+	if err == nil {
+		item, err = m.vendor.Dispense(slot)
+		// Out of stock, out of order, etc.
+		if err != nil {
+			item = nil
+			change = payment
+		}
 	}
 
-	return m.changeMaker.MakeChange(paid - item.Price)
+	return item, change, err
 }
 
-// Interface which allows items to be picked from the machine for the purpose of
-// selling items.
-type Picker interface {
-	Pick(id string) (*Item, error)
+func (m *Machine) Describe() []VendingItem {
+	items := make([]VendingItem, 0)
+	for choice, slot := range m.vendor.List() {
+		item := VendingItem{choice, slot.ItemName(), slot.Price(), slot.Available()}
+		items = append(items, item)
+	}
+	sort.Sort(byChoice(items))
+	return items
 }
 
-type ItemPicker struct {
-	slots map[string]*Slot
+type VendingItem struct {
+	Choice    string
+	Item      string
+	Price     int
+	Available bool
 }
 
-func (p *ItemPicker) Pick(id string) (*Item, error) {
-	slot, ok := p.slots[id]
-	if !ok {
-		return nil, fmt.Errorf("There are no items in slot %d", id)
+func (v VendingItem) String() string {
+	available := ""
+	if !v.Available {
+		available = " OUT OF STOCK"
 	}
+	return fmt.Sprintf("VendingItem[%s \"%s\" %dc%s]",
+		v.Choice, v.Item, v.Price, available)
+}
 
-	if slot.inventory <= 0 {
-		return nil, fmt.Errorf("The item in slot %d is out of stock", id)
-	}
-	slot.inventory -= 1
-	return slot.item, nil
+type byChoice []VendingItem
+
+func (v byChoice) Len() int           { return len(v) }
+func (v byChoice) Swap(i, j int)      { v[i], v[j] = v[j], v[i] }
+func (v byChoice) Less(i, j int) bool { return v[i].Choice < v[j].Choice }
+
+type ChoiceUnavailableError struct {
+	choice string
+	reason string
+}
+
+func (e *ChoiceUnavailableError) Error() string {
+	return fmt.Sprintf(
+		"Sorry, your choice \"%s\" is currently unavailable for reason: %v",
+		e.choice, e.reason)
+}
+
+type UnderpaidError struct {
+	choice string
+	price  int
+	paid   int
+}
+
+func (e *UnderpaidError) Error() string {
+	return fmt.Sprintf(
+		"Your choice \"%s\" costs %dc, you only paid %dc.",
+		"Please insert the correct amount and try again",
+		e.choice, e.price, e.paid)
 }

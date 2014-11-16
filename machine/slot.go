@@ -10,3 +10,15 @@ type Slot struct {
 func (s *Slot) String() string {
 	return fmt.Sprintf("Slot[%v, %d remaining]", s.item, s.inventory)
 }
+
+func (s *Slot) Price() int {
+	return s.item.Price
+}
+
+func (s *Slot) ItemName() string {
+	return s.item.Name
+}
+
+func (s *Slot) Available() bool {
+	return s.inventory > 0
+}
