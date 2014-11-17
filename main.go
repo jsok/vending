@@ -36,7 +36,11 @@ func main() {
 		vendor.Stock(choice, slot.Inventory, &machine.Item{item.Name, item.Price})
 	}
 
-	changeMaker := machine.NewGreedyChangeMaker(config.Denominations)
+	denoms := make([]machine.Denomination, len(config.Denominations))
+	for i, d := range config.Denominations {
+		denoms[i] = machine.Denomination(d)
+	}
+	changeMaker := machine.NewGreedyChangeMaker(denoms)
 
 	machine := machine.NewMachine(vendor, changeMaker)
 
