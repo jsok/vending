@@ -14,23 +14,23 @@ func TestChangeValue(t *testing.T) {
 
 func TestGreedyChangeMaker(t *testing.T) {
 	var cases = []struct {
-		denoms   DenominationSlice
+		denoms   []Denomination
 		value    int
 		expected Change
 	}{
 		{
-			DenominationSlice{1},
+			[]Denomination{1},
 			0,
 			Change{},
 		},
 		{
-			DenominationSlice{1, 5, 10, 20, 50, 100, 200},
+			[]Denomination{1, 5, 10, 20, 50, 100, 200},
 			45,
 			Change{20: 2, 5: 1},
 		},
 		{
 			// Typical greedy behaviour
-			DenominationSlice{1, 3, 4},
+			[]Denomination{1, 3, 4},
 			6,
 			Change{4: 1, 1: 2},
 		},
@@ -53,15 +53,15 @@ func TestGreedyChangeMaker(t *testing.T) {
 
 func TestGreedyChangeMakerFailure(t *testing.T) {
 	var cases = []struct {
-		denoms DenominationSlice
+		denoms []Denomination
 		value  int
 	}{
 		{
-			DenominationSlice{3},
+			[]Denomination{3},
 			2,
 		},
 		{
-			DenominationSlice{3, 4},
+			[]Denomination{3, 4},
 			6,
 		},
 	}

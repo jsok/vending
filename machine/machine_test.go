@@ -85,5 +85,5 @@ func (cm *AlwaysFailingChangeMaker) MakeChange(value int) (Change, error) {
 }
 
 func NewAussieChangeMaker() ChangeMaker {
-	return NewGreedyChangeMaker(DenominationSlice{1, 5, 10, 20, 50, 100, 200})
+	return NewGreedyChangeMaker([]Denomination{1, 5, 10, 20, 50, 100, 200})
 }

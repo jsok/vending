@@ -7,15 +7,12 @@ import (
 )
 
 type Denomination int
-type DenominationSlice []int
 
-func (d DenominationSlice) String() string {
-	s := make([]string, len(d))
-	for i := range d {
-		s[i] = fmt.Sprintf("%dc", d[i])
-	}
-	return fmt.Sprintf("DenominationSlice[%v]", strings.Join(s, " "))
-}
+type byDenomination []Denomination
+
+func (v byDenomination) Len() int           { return len(v) }
+func (v byDenomination) Swap(i, j int)      { v[i], v[j] = v[j], v[i] }
+func (v byDenomination) Less(i, j int) bool { return v[i] < v[j] }
 
 type Change map[Denomination]int
 
@@ -40,12 +37,12 @@ type ChangeMaker interface {
 }
 
 type GreedyChangeMaker struct {
-	denoms DenominationSlice
+	denoms []Denomination
 }
 
-func NewGreedyChangeMaker(denoms DenominationSlice) *GreedyChangeMaker {
+func NewGreedyChangeMaker(denoms []Denomination) *GreedyChangeMaker {
 	// Keep the denominations sorted in descending order
-	sort.Sort(sort.Reverse(sort.IntSlice(denoms)))
+	sort.Sort(sort.Reverse(byDenomination(denoms)))
 	return &GreedyChangeMaker{denoms: denoms}
 }
 
@@ -55,9 +52,9 @@ func (r *GreedyChangeMaker) MakeChange(value int) (Change, error) {
 
 	for i := range r.denoms {
 		d := r.denoms[i]
-		for d <= rem && rem > 0 {
-			change[Denomination(d)]++
-			rem -= d
+		for int(d) <= rem && rem > 0 {
+			change[d]++
+			rem -= int(d)
 		}
 	}
 
