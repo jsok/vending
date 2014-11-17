@@ -104,7 +104,7 @@ type UnderpaidError struct {
 
 func (e *UnderpaidError) Error() string {
 	return fmt.Sprintf(
-		"Your choice \"%s\" costs %dc, you only paid %dc.",
-		"Please insert the correct amount and try again",
+		"Your choice \"%s\" costs %dc, you only paid %dc. "+
+			"Please insert the correct amount and try again",
 		e.choice, e.price, e.paid)
 }
