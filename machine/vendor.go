@@ -21,7 +21,7 @@ func NewDefaultVendor() *DefaultVendor {
 }
 
 func (v *DefaultVendor) List() map[string]Slot {
-	list := make(map[string]Slot)
+	list := make(map[string]Slot, len(v.slots))
 	for choice, slot := range v.slots {
 		list[choice] = *slot
 	}
@@ -29,11 +29,11 @@ func (v *DefaultVendor) List() map[string]Slot {
 }
 
 func (v *DefaultVendor) Pick(choice string) (*Slot, error) {
-	if slot, ok := v.slots[choice]; !ok {
+	slot, ok := v.slots[choice]
+	if !ok {
 		return nil, fmt.Errorf("No item at choice \"%s\"", choice)
-	} else {
-		return slot, nil
 	}
+	return slot, nil
 }
 
 func (v *DefaultVendor) Dispense(slot *Slot) (*Item, error) {
