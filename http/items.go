@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/jsok/vending/machine"
@@ -13,9 +14,11 @@ type itemsListHandler struct {
 func (h *itemsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		for _, item := range h.machine.Describe() {
-			w.Write([]byte(item.String() + "\n"))
+		b, err := json.Marshal(h.machine.Describe())
+		if err != nil {
+			http.Error(w, err.Error(), 500)
 		}
+		w.Write(b)
 	default:
 		http.NotFound(w, r)
 	}
