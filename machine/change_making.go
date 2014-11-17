@@ -1,8 +1,10 @@
 package machine
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -30,6 +32,15 @@ func (c Change) String() string {
 		s = append(s, fmt.Sprintf("%d x %dc", num, denom))
 	}
 	return fmt.Sprintf("Change[%v]", strings.Join(s, ", "))
+}
+
+func (c Change) MarshalJSON() ([]byte, error) {
+	out := make(map[string]int)
+	for denom, num := range c {
+		// JSON keys must be strings
+		out[strconv.Itoa(int(denom))] = num
+	}
+	return json.Marshal(out)
 }
 
 type ChangeMaker interface {
