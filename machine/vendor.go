@@ -10,6 +10,7 @@ type Vendor interface {
 	Dispense(slot *Slot) (*Item, error)
 	Stock(slot string, quantity int, item *Item)
 	Refill(slot *Slot, quantity int) error
+	Remove(choice string) error
 }
 
 type DefaultVendor struct {
@@ -50,5 +51,13 @@ func (v *DefaultVendor) Stock(slot string, quantity int, item *Item) {
 
 func (v *DefaultVendor) Refill(slot *Slot, quantity int) error {
 	slot.inventory += quantity
+	return nil
+}
+
+func (v *DefaultVendor) Remove(slot string) error {
+	if _, err := v.Pick(slot); err != nil {
+		return err
+	}
+	delete(v.slots, slot)
 	return nil
 }

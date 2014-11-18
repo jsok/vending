@@ -6,9 +6,8 @@ import (
 )
 
 func TestMachineFailedToMakeChange(t *testing.T) {
-	vendor := NewDefaultVendor()
-	vendor.Stock("A0", 1, &Item{"Item 0", 99})
-	m := New(vendor, &AlwaysFailingChangeMaker{})
+	m := New(NewDefaultVendor(), &AlwaysFailingChangeMaker{})
+	m.Stock("A0", "Item 0", 99, 1)
 
 	payment := Change{100: 1}
 	item, change, err := m.Purchase("A0", payment)
@@ -26,10 +25,10 @@ func TestMachineFailedToMakeChange(t *testing.T) {
 }
 
 func TestMachineWithDefaultVendor(t *testing.T) {
-	vendor := NewDefaultVendor()
-	vendor.Stock("A0", 10, &Item{"Item 0", 99})
-	vendor.Stock("A1", 1, &Item{"Item 1", 50})
-	vendor.Stock("A2", 0, &Item{"Item 2", 150})
+	m := New(NewDefaultVendor(), NewAussieChangeMaker())
+	m.Stock("A0", "Item 0", 99, 10)
+	m.Stock("A1", "Item 1", 50, 1)
+	m.Stock("A2", "Item 2", 150, 0)
 
 	var cases = []struct {
 		Choice         string
@@ -47,8 +46,6 @@ func TestMachineWithDefaultVendor(t *testing.T) {
 		{"A2", Change{100: 1, 50: 1}, false, 150, "Inventory is exhausted"},
 		{"A3", Change{50: 1}, false, 50, "No such item"},
 	}
-
-	m := New(vendor, NewAussieChangeMaker())
 
 	for _, c := range cases {
 		item, change, err := m.Purchase(c.Choice, c.PayWith)
@@ -75,10 +72,8 @@ func TestMachineWithDefaultVendor(t *testing.T) {
 }
 
 func TestRefill(t *testing.T) {
-	vendor := NewDefaultVendor()
-	vendor.Stock("A0", 0, &Item{"Item 0", 100})
-
-	m := New(vendor, NewAussieChangeMaker())
+	m := New(NewDefaultVendor(), NewAussieChangeMaker())
+	m.Stock("A0", "Item 0", 100, 0)
 
 	if err := m.Refill("A0", 1); err != nil {
 		t.Errorf("Failed to refill machine because \"%s\"", err.Error())
@@ -86,6 +81,19 @@ func TestRefill(t *testing.T) {
 
 	if _, _, err := m.Purchase("A0", Change{100: 1}); err != nil {
 		t.Errorf("Failed to purchase item after refilling it")
+	}
+}
+
+func TestOutOfOrder(t *testing.T) {
+	m := New(NewDefaultVendor(), NewAussieChangeMaker())
+	m.Stock("A0", "Item 0", 100, 1)
+
+	if err := m.OutOfOrder("A0"); err != nil {
+		t.Errorf("Failed to set slot as Out Of Order because \"%s\"", err.Error())
+	}
+
+	if _, _, err := m.Purchase("A0", Change{100: 1}); err == nil {
+		t.Errorf("Purchasing an out of order item should fail")
 	}
 }
 
