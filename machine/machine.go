@@ -10,7 +10,7 @@ type Machine struct {
 	changeMaker ChangeMaker
 }
 
-func NewMachine(vendor Vendor, changeMaker ChangeMaker) *Machine {
+func New(vendor Vendor, changeMaker ChangeMaker) *Machine {
 	return &Machine{vendor, changeMaker}
 }
 

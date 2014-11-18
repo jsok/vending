@@ -8,7 +8,7 @@ import (
 func TestMachineFailedToMakeChange(t *testing.T) {
 	vendor := NewDefaultVendor()
 	vendor.Stock("A0", 1, &Item{"Item 0", 99})
-	m := NewMachine(vendor, &AlwaysFailingChangeMaker{})
+	m := New(vendor, &AlwaysFailingChangeMaker{})
 
 	payment := Change{100: 1}
 	item, change, err := m.Purchase("A0", payment)
@@ -48,7 +48,7 @@ func TestMachineWithDefaultVendor(t *testing.T) {
 		{"A3", Change{50: 1}, false, 50, "No such item"},
 	}
 
-	m := NewMachine(vendor, NewAussieChangeMaker())
+	m := New(vendor, NewAussieChangeMaker())
 
 	for _, c := range cases {
 		item, change, err := m.Purchase(c.Choice, c.PayWith)

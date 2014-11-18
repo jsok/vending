@@ -42,7 +42,7 @@ func main() {
 	}
 	changeMaker := machine.NewGreedyChangeMaker(denoms)
 
-	machine := machine.NewMachine(vendor, changeMaker)
+	machine := machine.New(vendor, changeMaker)
 
 	fmt.Println("Vending Machine items available:")
 	for _, item := range machine.Describe() {
