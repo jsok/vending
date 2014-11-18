@@ -38,6 +38,8 @@ func (h *itemHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.stock(w, r)
 	case "PUT":
 		h.refill(w, r)
+	case "DELETE":
+		h.outOfOrder(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -88,6 +90,23 @@ func (h *itemHandler) refill(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.Refill(choice, inventory); err != nil {
 		http.Error(w, fmt.Sprintf("Could not refill \"%s\" because: %v", choice, err), 400)
+		return
+	}
+
+	b, err := json.Marshal(okResponse{"OK"})
+	if err != nil {
+		http.Error(w, "Unknown error occurred", 500)
+		return
+	}
+	w.Write(b)
+}
+
+func (h *itemHandler) outOfOrder(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(r.URL.Path, "/")
+	choice := parts[len(parts)-1]
+
+	if err := h.OutOfOrder(choice); err != nil {
+		http.Error(w, fmt.Sprintf("Could not set choice \"%s\" as Out Of Order because: %v", choice, err), 400)
 		return
 	}
 

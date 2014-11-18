@@ -108,4 +108,18 @@ Example response:
 
 ###  DELETE `/api/items/<choice>`
 
-Sets an item as *OUT OF ORDER*.
+Sets an item as *OUT OF ORDER*. Will fail if the choice does not exist.
+
+Example request:
+
+```
+curl -X DELETE http://localhost:5000/api/items/A1
+```
+
+Example response:
+
+```json
+{
+    "status": "OK"
+}
+```
