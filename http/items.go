@@ -8,13 +8,13 @@ import (
 )
 
 type itemsListHandler struct {
-	machine *machine.Machine
+	*machine.Machine
 }
 
 func (h *itemsListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		b, err := json.Marshal(h.machine.Describe())
+		b, err := json.Marshal(h.Describe())
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 		}

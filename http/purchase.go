@@ -9,7 +9,7 @@ import (
 )
 
 type purchaseHandler struct {
-	machine *machine.Machine
+	*machine.Machine
 }
 
 func (h *purchaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (h *purchaseHandler) createPurchase(w http.ResponseWriter, r *http.Request)
 
 	payment := UrlValuesToChange(r.PostForm["coins[]"])
 
-	item, change, err := h.machine.Purchase(choice, payment)
+	item, change, err := h.Purchase(choice, payment)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
