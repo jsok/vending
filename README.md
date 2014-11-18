@@ -68,18 +68,44 @@ Example response:
 
 ### POST `/api/items/<choice>`
 
-Stock a new item.
+Stock a new item. Creates a new slot if it doesn't exist, otherwise replaces the existing item stocked in that slot.
 
-Requires auth.
+Example request:
+
+```
+curl http://localhost:5000/api/items/A1 \
+ -d "name='Coke Cola'" \
+ -d "price=180" \
+ -d "inventory=20"
+```
+
+Example response:
+
+```json
+{
+    "status": "OK"
+}
+```
 
 ### PUT `/api/items/<choice>`
 
 Refills an item.
 
-Requires auth.
+Example request:
+
+```
+curl -X PUT http://localhost:5000/api/items/A1 \
+  -d inventory=1
+```
+
+Example response:
+
+```json
+{
+    "status": "OK"
+}
+```
 
 ###  DELETE `/api/items/<choice>`
 
 Sets an item as *OUT OF ORDER*.
-
-Requires auth.
