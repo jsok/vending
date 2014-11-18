@@ -33,36 +33,42 @@ type itemHandler struct {
 
 func (h *itemHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case "POST":
+		stock(w, r)
 	case "PUT":
-		parts := strings.Split(r.URL.Path, "/")
-		choice := parts[len(parts)-1]
-
-		r.ParseForm()
-		inventory, ok := r.PostForm["inventory"]
-		if !ok {
-			http.Error(w, "Required field \"inventory\" missing", 400)
-			return
-		}
-		amount, err := strconv.Atoi(inventory[0])
-		if err != nil {
-			http.Error(w, "Please specify inventory amount as an integer", 400)
-			break
-		}
-
-		if err := h.Refill(choice, amount); err != nil {
-			http.Error(w, fmt.Sprintf("Could not refill \"%s\" because: %v", choice, err), 400)
-			return
-		}
-
-		b, err := json.Marshal(okResponse{"OK"})
-		if err != nil {
-			http.Error(w, "Unknown error occurred", 500)
-			return
-		}
-		w.Write(b)
+		refill(w, r)
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (h *itemHandler) refill(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(r.URL.Path, "/")
+	choice := parts[len(parts)-1]
+
+	r.ParseForm()
+	inventory, ok := r.PostForm["inventory"]
+	if !ok {
+		http.Error(w, "Required field \"inventory\" missing", 400)
+		return
+	}
+	amount, err := strconv.Atoi(inventory[0])
+	if err != nil {
+		http.Error(w, "Please specify inventory amount as an integer", 400)
+		break
+	}
+
+	if err := h.Refill(choice, amount); err != nil {
+		http.Error(w, fmt.Sprintf("Could not refill \"%s\" because: %v", choice, err), 400)
+		return
+	}
+
+	b, err := json.Marshal(okResponse{"OK"})
+	if err != nil {
+		http.Error(w, "Unknown error occurred", 500)
+		return
+	}
+	w.Write(b)
 }
 
 type okResponse struct {
