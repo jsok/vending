@@ -74,6 +74,21 @@ func TestMachineWithDefaultVendor(t *testing.T) {
 	}
 }
 
+func TestRefill(t *testing.T) {
+	vendor := NewDefaultVendor()
+	vendor.Stock("A0", 0, &Item{"Item 0", 100})
+
+	m := New(vendor, NewAussieChangeMaker())
+
+	if err := m.Refill("A0", 1); err != nil {
+		t.Errorf("Failed to refill machine because \"%s\"", err.Error())
+	}
+
+	if _, _, err := m.Purchase("A0", Change{100: 1}); err != nil {
+		t.Errorf("Failed to purchase item after refilling it")
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Useful stubs
 //////////////////////////////////////////////////////////////////////////////

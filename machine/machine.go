@@ -53,6 +53,14 @@ func (m *Machine) Purchase(choice string, payment Change) (*Item, Change, error)
 	return item, change, err
 }
 
+func (m *Machine) Refill(choice string, amount int) error {
+	slot, err := m.vendor.Pick(choice)
+	if err != nil {
+		err = &ChoiceUnavailableError{choice, err.Error()}
+	}
+	return m.vendor.Refill(slot, amount)
+}
+
 func (m *Machine) Describe() []VendingItem {
 	items := make([]VendingItem, 0)
 	for choice, slot := range m.vendor.List() {
