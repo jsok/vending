@@ -11,6 +11,7 @@ func Serve(machine *machine.Machine) {
 	mux := http.NewServeMux()
 
 	mux.Handle("/api/items", &itemsListHandler{machine})
+	mux.Handle("/api/items/", &itemHandler{machine})
 	mux.Handle("/api/purchase", &purchaseHandler{machine})
 
 	log.Println("Listening...")
