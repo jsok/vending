@@ -57,6 +57,7 @@ func (m *Machine) Refill(choice string, amount int) error {
 	slot, err := m.vendor.Pick(choice)
 	if err != nil {
 		err = &ChoiceUnavailableError{choice, err.Error()}
+		return err
 	}
 	return m.vendor.Refill(slot, amount)
 }
