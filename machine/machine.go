@@ -62,6 +62,10 @@ func (m *Machine) Refill(choice string, amount int) error {
 	return m.vendor.Refill(slot, amount)
 }
 
+func (m *Machine) Stock(choice, name string, price, quantity int) {
+	m.vendor.Stock(choice, quantity, &Item{name, price})
+}
+
 func (m *Machine) Describe() []VendingItem {
 	items := make([]VendingItem, 0)
 	for choice, slot := range m.vendor.List() {
